@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Painel de Estudos · Concurso TI</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f6f7fb;--card:#fff;--tx:#1b1f2a;--mu:#6a7288;--ac:#4f46e5;--ok:#16a34a;--bd:#e3e6ef}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#12141c;--card:#1b1e2a;--tx:#e8eaf2;--mu:#98a0b8;--ac:#818cf8;--ok:#4ade80;--bd:#2a2e3e}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#12141c;--card:#1b1e2a;--tx:#e8eaf2;--mu:#98a0b8;--ac:#818cf8;--ok:#4ade80;--bd:#2a2e3e}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:980px;margin:0 auto;padding:16px}
+h1{font-size:22px;margin:4px 0 2px}h2{font-size:15px;margin:0 0 10px}
+.sub{color:var(--mu);margin:0 0 14px}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:12px}
+.k{font-size:26px;font-weight:700}.l{color:var(--mu);font-size:12px}
+label{display:block;font-size:12px;color:var(--mu);margin:8px 0 3px}
+input,select,textarea,button{font:inherit;color:var(--tx);background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px 10px;width:100%}
+textarea{min-height:64px;resize:vertical}
+button{background:var(--ac);color:#fff;border:0;cursor:pointer;width:auto;padding:9px 16px;font-weight:600}
+button.g{background:transparent;color:var(--mu);border:1px solid var(--bd);padding:4px 9px;font-weight:400}
+.row{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
+.bars{display:flex;align-items:flex-end;gap:8px;height:120px}
+.bar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%}
+.bar i{display:block;width:100%;background:var(--ac);border-radius:5px 5px 0 0;min-height:2px}
+.bar span{font-size:11px;color:var(--mu);margin-top:4px}
+.prog{height:8px;background:var(--bd);border-radius:6px;overflow:hidden}.prog i{display:block;height:100%;background:var(--ok)}
+.mat{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid var(--bd);font-size:14px}
+.item{display:flex;gap:8px;align-items:center;padding:5px 0}.item input{width:auto}
+.item.done span{text-decoration:line-through;color:var(--mu)}
+.ai{white-space:pre-wrap;margin-top:10px}
+.sess{padding:8px 0;border-bottom:1px solid var(--bd);font-size:14px}
+.sess small{color:var(--mu);display:block}
+.wide{overflow-x:auto}
+.tabs{display:flex;gap:8px;margin-bottom:12px}.tabs button{background:var(--card);color:var(--tx);border:1px solid var(--bd)}.tabs button.on{background:var(--ac);color:#fff}
+.chip{background:var(--bg);color:var(--tx);border:1px solid var(--bd);padding:5px 11px;font-weight:400;margin:0 6px 6px 0}.chip.on{background:var(--ac);color:#fff}
+.rb{display:flex;align-items:center;gap:8px;font-size:13px;margin:3px 0}.rb .prog{flex:1}.rb i{background:#dc2626}
+</style>
+</head>
+<body>
+<main>
+<h1>📚 Painel de Estudos · Concurso TI</h1>
+<p class="sub">Registre suas sessões e veja as estatísticas atualizarem sozinhas.</p>
+
+<div class="tabs"><button id="b1" class="on">Painel</button><button id="b2">Teste</button></div>
+<div id="p1"><div class="grid" id="kpis"></div>
+
+<div class="card" style="margin-top:12px">
+<h2>Meta semanal</h2>
+<div class="row"><div><label>Meta (horas/semana)</label><input id="goal" type="number" min="1" step="0.5"></div><div style="align-self:end"><div class="prog"><i id="gbar"></i></div><div class="l" id="gtxt"></div></div></div>
+</div>
+
+<div class="card">
+<h2>Registrar sessão de estudo</h2>
+<div class="row">
+<div><label>Data</label><input id="d" type="date"></div>
+<div><label>Matéria</label><select id="m"></select></div>
+<div><label>Tempo (min)</label><input id="t" type="number" min="1" placeholder="60"></div>
+<div><label>Questões feitas</label><input id="q" type="number" min="0" placeholder="0"></div>
+<div><label>Acertos</label><input id="a" type="number" min="0" placeholder="0"></div>
+</div>
+<label>Anotações / dificuldades (alimenta a análise da IA)</label>
+<textarea id="n" placeholder="Ex.: errei normalização 3FN, revisar índices B-tree…"></textarea>
+<div style="margin-top:10px"><button id="add">Salvar sessão</button></div>
+</div>
+
+<div class="card"><h2>Horas nos últimos 7 dias</h2><div class="bars" id="bars"></div></div>
+
+<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">
+<div class="card"><h2>Por matéria</h2><div id="mats"></div></div>
+<div class="card"><h2>Checklist do edital</h2>
+<div id="topics"></div>
+<div style="display:flex;gap:8px;margin-top:8px"><input id="nt" placeholder="Novo tópico (ex.: SQL avançado)"><button id="addt">+</button></div></div>
+</div>
+
+<div class="card">
+<h2>🤖 Coach de IA</h2>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+<button id="an">Analisar meu desempenho</button>
+<button id="pl">Montar plano da semana</button>
+</div>
+<div class="ai" id="ai"></div>
+</div>
+
+<div class="card wide"><h2>Últimas sessões</h2><div id="list"></div></div></div>
+<div id="p2" hidden>
+<div class="card"><h2>⏰ Revisão, ritmo e ciclo</h2><div id="alr"></div><div id="rit" style="margin-top:10px"></div>
+<div style="margin-top:10px;display:flex;gap:10px;align-items:center"><button id="cr">▶ Iniciar cronômetro</button><b id="crt">00:00</b></div><div id="ciclo" style="margin-top:10px"></div></div>
+<div class="card"><h2>📓 Caderno de erros</h2><div class="row"><div><label>Matéria</label><select id="em"></select></div></div><label>Questão</label><textarea id="eq"></textarea><label>Comentário (por que errei)</label><textarea id="ec"></textarea><div style="margin-top:8px"><button id="eadd">Salvar erro</button></div><div id="elist"></div><div class="ai" id="eout"></div></div>
+<div class="card"><h2>🧪 Banco de questões (IA)</h2><div class="row"><div><label>Banca</label><input id="qb" placeholder="Ex.: Cebraspe"></div><div><label>Matéria</label><select id="qm"></select></div><div><label>Tópico</label><input id="qt" placeholder="Ex.: normalização"></div><div><label>Quantidade</label><select id="qn"><option>3</option><option>5</option><option>10</option></select></div></div><div style="margin-top:10px"><button id="qg">Gerar questões</button></div><div class="ai" id="qo"></div></div>
+<div class="card"><h2>🙂 Humor geral</h2><div id="hc"></div><input id="hn" placeholder="Observação rápida (opcional)"><div style="margin-top:8px"><button id="hs">Registrar</button></div><div id="hl" class="l" style="margin-top:8px"></div></div>
+<div class="card"><h2>✍️ Redação / discursiva</h2><div class="row"><div><label>Tipo</label><select id="rp"><option>Dissertativa-argumentativa</option><option>Discursiva técnica de TI</option><option>Parecer</option><option>Resumo</option></select></div><div><label>Tema</label><input id="rh"></div><div><label>Nota (0 a 10)</label><input id="rn" type="number" min="0" max="10" step="0.5"></div></div><label>Régua de erros desta redação</label><div id="rr"></div><div style="margin-top:8px"><button id="radd">Salvar redação</button></div><div id="rst" style="margin-top:12px"></div>
+<label>Temas mais prováveis na prova (conclusões)</label><textarea id="rt"></textarea><label>Fórmula / modelo da prova</label><textarea id="rf" placeholder="Ex.: introdução com tese, 2 argumentos, conclusão com proposta…"></textarea>
+<label>Banca e cargo (para sugerir temas)</label><input id="rb"><label>Cole sua discursiva para análise</label><textarea id="rx" style="min-height:110px"></textarea><div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"><button id="ra">Analisar erros</button><button id="rtm">Sugerir temas prováveis</button></div><div class="ai" id="ro"></div></div>
+</div>
+</main>
+
+<script>
+var MATS=["Banco de dados","Redes","Programação","Segurança da informação","Engenharia de software","Sistemas operacionais","Português","Raciocínio lógico","Legislação"];
+var S={sessions:[],goal:10,topics:[]};
+var ref=null,LS="painel-concurso-v1";
+var $=function(i){return document.getElementById(i)};
+function today(){var x=new Date();return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0")}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function fh(min){return (min/60).toFixed(1).replace(".",",")+" h"}
+
+async function load(){
+ try{var u=await claude.use("user"),db=await claude.use("db");
+  if(u&&db){var id=await u.id();ref=db.collection("data/users/"+id).doc("estado");
+   var s=await ref.get();if(s.exists){S=Object.assign(S,s.data());return}}}catch(e){}
+ try{var r=localStorage.getItem(LS);if(r)S=Object.assign(S,JSON.parse(r))}catch(e){}
+}
+var tm=null;
+function save(){
+ try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}
+ clearTimeout(tm);tm=setTimeout(function(){if(ref){try{ref.set(JSON.parse(JSON.stringify(S))).catch(function(){})}catch(e){}}},400);
+}
+
+function weekStart(){var x=new Date();x.setHours(0,0,0,0);x.setDate(x.getDate()-((x.getDay()+6)%7));return x}
+function render(){
+ var ss=S.sessions,tot=0,qs=0,ac=0,wk=0,ws=weekStart(),days={};
+ ss.forEach(function(s){tot+=s.t;qs+=s.q||0;ac+=s.a||0;days[s.d]=1;if(new Date(s.d+"T00:00:00")>=ws)wk+=s.t});
+ var st=0,c=new Date();c.setHours(0,0,0,0);
+ if(!days[today()])c.setDate(c.getDate()-1);
+ while(true){var k=c.getFullYear()+"-"+String(c.getMonth()+1).padStart(2,"0")+"-"+String(c.getDate()).padStart(2,"0");if(days[k]){st++;c.setDate(c.getDate()-1)}else break}
+ var rate=qs?Math.round(ac/qs*100)+"%":"—";
+ $("kpis").innerHTML=[[fh(tot),"Total estudado"],[fh(wk),"Nesta semana"],[rate,"Taxa de acerto"],[qs,"Questões resolvidas"],[st+" d","Sequência de dias"]].map(function(x){return '<div class="card" style="margin:0"><div class="k">'+x[0]+'</div><div class="l">'+x[1]+'</div></div>'}).join("");
+ $("goal").value=S.goal;
+ var p=Math.min(100,wk/60/S.goal*100);$("gbar").style.width=p+"%";$("gtxt").textContent=fh(wk)+" de "+S.goal+" h ("+Math.round(p)+"%)";
+ var bars=[],mx=1,i;
+ for(i=6;i>=0;i--){var dd=new Date();dd.setDate(dd.getDate()-i);var key=dd.getFullYear()+"-"+String(dd.getMonth()+1).padStart(2,"0")+"-"+String(dd.getDate()).padStart(2,"0");var m=0;ss.forEach(function(s){if(s.d===key)m+=s.t});bars.push([["D","S","T","Q","Q","S","S"][dd.getDay()],m]);mx=Math.max(mx,m)}
+ $("bars").innerHTML=bars.map(function(b){return '<div class="bar" title="'+fh(b[1])+'"><i style="height:'+(b[1]/mx*100)+'%"></i><span>'+b[0]+'</span></div>'}).join("");
+ var by={};ss.forEach(function(s){var o=by[s.m]||(by[s.m]={t:0,q:0,a:0});o.t+=s.t;o.q+=s.q||0;o.a+=s.a||0});
+ var ks=Object.keys(by).sort(function(a,b){return by[b].t-by[a].t});
+ $("mats").innerHTML=ks.length?ks.map(function(k){var o=by[k];return '<div class="mat"><span>'+esc(k)+'</span><span>'+fh(o.t)+(o.q?' · '+Math.round(o.a/o.q*100)+'%':'')+'</span></div>'}).join(""):'<div class="l">Sem dados ainda.</div>';
+ $("topics").innerHTML=S.topics.length?S.topics.map(function(t,i){return '<div class="item'+(t.x?' done':'')+'"><input type="checkbox" data-i="'+i+'" '+(t.x?'checked':'')+'><span style="flex:1">'+esc(t.n)+'</span><button class="g" data-del="'+i+'">×</button></div>'}).join(""):'<div class="l">Adicione os tópicos do edital.</div>';
+ var done=S.topics.filter(function(t){return t.x}).length;
+ $("list").innerHTML=ss.length?ss.slice().sort(function(a,b){return b.d<a.d?-1:1}).slice(0,15).map(function(s){return '<div class="sess"><b>'+esc(s.m)+'</b> · '+s.t+' min'+(s.q?' · '+s.a+'/'+s.q+' acertos':'')+' <small>'+s.d.split("-").reverse().join("/")+(s.n?' — '+esc(s.n):'')+'</small> <button class="g" data-rm="'+s.id+'">remover</button></div>'}).join(""):'<div class="l">Nenhuma sessão registrada.</div>';
+ window._done=done;if(window.r2&&!$("p2").hidden)r2();
+}
+
+function summary(){
+ var by={};S.sessions.forEach(function(s){var o=by[s.m]||(by[s.m]={min:0,q:0,a:0,notas:[]});o.min+=s.t;o.q+=s.q||0;o.a+=s.a||0;if(s.n)o.notas.push(s.n)});
+ return JSON.stringify({metaSemanalHoras:S.goal,porMateria:by,topicosEdital:S.topics.map(function(t){return {n:t.n,feito:!!t.x}}),ultimasSessoes:S.sessions.slice(-10)});
+}
+async function ask(kind){
+ var out=$("ai");
+ if(!S.sessions.length){out.textContent="Registre ao menos uma sessão primeiro.";return}
+ try{var sm=await claude.use("sample");if(!sm){out.textContent="IA indisponível nesta visualização.";return}
+  var instr=kind==="an"?"Analise o desempenho: pontos fortes, matérias com taxa de acerto baixa ou pouco tempo, padrões nas anotações e 3 ações concretas.":"Monte um plano de estudo de 7 dias, dentro da meta semanal, priorizando as matérias mais fracas e os tópicos do edital pendentes. Formato: dia, matéria, minutos, foco.";
+  out.textContent="Pensando…";
+  var r=await sm("Você é coach de estudos para concursos de TI (foco em banco de dados). Responda em português do Brasil, direto e objetivo, sem markdown pesado. "+instr+"\n\nDados do aluno (JSON):\n"+summary(),{onText:function(x){out.textContent=x.text}});
+  out.textContent=r.text;
+ }catch(e){out.textContent="Não consegui consultar a IA agora ("+(e&&e.code||"erro")+")."}
+}
+
+document.addEventListener("click",function(e){
+ var t=e.target;
+ if(t.dataset.rm){S.sessions=S.sessions.filter(function(s){return String(s.id)!==t.dataset.rm});save();render()}
+ if(t.dataset.del){S.topics.splice(+t.dataset.del,1);save();render()}
+ if(t.dataset.i!==undefined&&t.type==="checkbox"){S.topics[+t.dataset.i].x=t.checked;save();render()}
+});
+$("add").onclick=function(){
+ var m=+$("t").value;if(!m||m<1){$("t").focus();return}
+ var q=+$("q").value||0,a=Math.min(+$("a").value||0,q);
+ S.sessions.push({id:Date.now(),d:$("d").value||today(),m:$("m").value,t:m,q:q,a:a,n:$("n").value.trim()});
+ ["t","q","a","n"].forEach(function(i){$(i).value=""});save();render();
+};
+$("addt").onclick=function(){var v=$("nt").value.trim();if(v){S.topics.push({n:v,x:false});$("nt").value="";save();render()}};
+$("goal").onchange=function(){S.goal=Math.max(1,+$("goal").value||10);save();render()};
+$("an").onclick=function(){ask("an")};$("pl").onclick=function(){ask("pl")};
+
+$("m").innerHTML=MATS.map(function(m){return "<option>"+m+"</option>"}).join("");
+$("d").value=today();
+render();
+var ERR=["Ortografia","Gramática/concordância","Coesão","Estrutura","Tangenciou o tema","Argumento fraco","Sem exemplo","Conclusão fraca","Estourou o tempo"],HUM=["Focado","Motivado","Cansado","Ansioso","Distraído","Sem tempo","Tranquilo"],hs=[],re=[],tt=null,t0=0;
+["em","qm"].forEach(function(i){$(i).innerHTML=MATS.map(function(m){return "<option>"+m+"</option>"}).join("")});
+function tab(n){$("p1").hidden=n==2;$("p2").hidden=n==1;$("b1").className=n==1?"on":"";$("b2").className=n==2?"on":"";scrollTo(0,0);if(n==2)r2()}
+$("b1").onclick=function(){tab(1)};$("b2").onclick=function(){tab(2)};
+function d0(s){return new Date(s+"T00:00:00")}
+function pad(n){return String(n).padStart(2,"0")}
+async function ia(p,o,cb){try{var sm=await claude.use("sample");if(!sm){o.textContent="IA indisponível nesta visualização.";return}o.textContent="Pensando…";var r=await sm("Você é coach de concursos de TI. Responda em português do Brasil, direto, sem markdown pesado.\n"+p,{cache:false,onText:function(x){o.textContent=x.text}});o.textContent=r.text;if(cb)cb(r.text)}catch(e){o.textContent="Não consegui consultar a IA agora ("+(e&&e.code||"erro")+")."}}
+function r2(){
+ S.erros=S.erros||[];S.red=S.red||[];S.hum=S.hum||[];S.rm=S.rm||{t:"",m:""};
+ var now=new Date(),wd=(now.getDay()+6)%7,ws=weekStart(),wk=0,hj=0;
+ S.sessions.forEach(function(s){if(d0(s.d)>=ws)wk+=s.t;if(s.d===today())hj+=s.t});
+ $("alr").innerHTML=S.topics.length?S.topics.map(function(t,i){var dd=t.r?Math.floor((now-d0(t.r))/864e5):null;return '<div class="item"><span style="flex:1">'+esc(t.n)+' <small class="l">'+(dd===null?'⚠️ nunca revisado':dd>7?'⏳ sem revisão há '+dd+' dias':'✅ revisado há '+dd+' d')+'</small></span><button class="g" data-rev="'+i+'">revisei hoje</button></div>'}).join(""):'<div class="l">Cadastre tópicos no checklist do edital (aba Painel) para ativar os alertas.</div>';
+ var left=7-wd,meta=S.goal*60,need=Math.max(0,meta-wk),ideal=Math.round(meta*(wd+1)/7),df=wk-ideal;
+ $("rit").innerHTML='<b>Hoje:</b> '+hj+' min · <b>Semana:</b> '+wk+' de '+meta+' min · '+(need?'faltam <b>'+Math.round(need/left)+' min/dia</b> em '+left+' dia(s)':'meta batida 🎉')+'<br><span class="l">Ritmo ideal até hoje: '+ideal+' min → você está '+(df>=0?df+' min adiantado':-df+' min atrasado')+'</span>';
+ var cl=S.ciclo?Math.floor((now-d0(S.ciclo))/864e5):null;
+ $("ciclo").innerHTML=cl===null?'<button id="ci" data-ci="1">Iniciar ciclo de 15 dias</button>':(cl>=15?'🔔 <b>Hora de revisar o plano</b> (ciclo de '+cl+' dias) ':'Revisão do plano em <b>'+(15-cl)+' dia(s)</b> ')+'<button class="g" data-ci="1">'+(cl>=15?'Concluí a revisão':'reiniciar ciclo')+'</button>';
+ $("elist").innerHTML=S.erros.slice().reverse().slice(0,8).map(function(e){return '<div class="sess"><b>'+esc(e.m)+'</b> <small>'+e.d.split("-").reverse().join("/")+'</small>'+esc(e.q.slice(0,140))+(e.c?'<small>Motivo: '+esc(e.c)+'</small>':'')+'<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap"><button class="g" data-ia="fc" data-id="'+e.id+'">flashcards (IA)</button><button class="g" data-ia="qs" data-id="'+e.id+'">questão parecida (IA)</button><button class="g" data-er="'+e.id+'">remover</button></div></div>'}).join("");
+ $("hc").innerHTML=HUM.map(function(h){return '<button class="chip'+(hs.indexOf(h)>-1?' on':'')+'" data-h="'+h+'">'+h+'</button>'}).join("");
+ $("hl").innerHTML=S.hum.slice(-5).reverse().map(function(h){return h.d.split("-").reverse().join("/")+": "+esc(h.t.join(", "))+(h.n?" — "+esc(h.n):"")}).join("<br>");
+ $("rr").innerHTML=ERR.map(function(x,i){return '<label class="rb" style="color:var(--tx)"><input type="checkbox" style="width:auto" data-re="'+i+'" '+(re.indexOf(i)>-1?'checked':'')+'> '+x+'</label>'}).join("");
+ var R=S.red,cnt=ERR.map(function(x,i){var c=0;R.forEach(function(r){if(r.e.indexOf(i)>-1)c++});return [x,c]}).filter(function(z){return z[1]}).sort(function(a,b){return b[1]-a[1]}),mx=cnt.length?cnt[0][1]:1,avg=R.length?(R.reduce(function(s,r){return s+r.n},0)/R.length).toFixed(1):"—";
+ $("rst").innerHTML=R.length?'<b>'+R.length+'</b> redação(ões) · média <b>'+avg+'</b><div class="bars" style="height:80px;margin:8px 0">'+R.slice(-10).map(function(r){return '<div class="bar" title="'+esc(r.t)+': '+r.n+'"><i style="height:'+r.n*10+'%"></i><span>'+r.n+'</span></div>'}).join("")+'</div>'+(cnt.length?'<div class="l">Erros mais repetidos</div>'+cnt.map(function(z){return '<div class="rb"><span style="width:150px">'+z[0]+'</span><div class="prog"><i style="width:'+z[1]/mx*100+'%"></i></div><b>'+z[1]+'</b></div>'}).join(""):""):'<div class="l">Salve a primeira redação para ver a evolução.</div>';
+}
+document.addEventListener("click",function(e){var t=e.target,D=t.dataset;
+ if(D.rev!==undefined){S.topics[+D.rev].r=today();save();r2()}
+ if(D.ci){S.ciclo=today();save();r2()}
+ if(D.h){var i=hs.indexOf(D.h);i>-1?hs.splice(i,1):hs.push(D.h);r2()}
+ if(D.er){S.erros=S.erros.filter(function(x){return String(x.id)!==D.er});save();r2()}
+ if(D.ia){var x=S.erros.filter(function(z){return String(z.id)===D.id})[0];if(x)ia((D.ia==="fc"?"Crie 3 flashcards (Frente/Verso) para fixar o conceito por trás deste erro.":"Crie 2 questões inéditas de múltipla escolha (A a E), no estilo de banca de concurso, parecidas com esta, com gabarito comentado.")+"\nMatéria: "+x.m+"\nQuestão: "+x.q+"\nMeu motivo do erro: "+x.c,$("eout"))}
+ if(t.dataset.re!==undefined&&t.type==="checkbox"){var k=+t.dataset.re,j=re.indexOf(k);j>-1?re.splice(j,1):re.push(k)}
+});
+$("eadd").onclick=function(){var q=$("eq").value.trim();if(!q)return;S.erros.push({id:Date.now(),d:today(),m:$("em").value,q:q,c:$("ec").value.trim()});$("eq").value=$("ec").value="";save();r2()};
+$("qg").onclick=function(){ia("Crie "+$("qn").value+" questões inéditas de múltipla escolha (A a E) no estilo da banca "+($("qb").value||"de concursos de TI")+", matéria "+$("qm").value+("qt",$("qt").value?", tópico "+$("qt").value:"")+". Dê gabarito comentado ao final de cada uma.",$("qo"))};
+$("hs").onclick=function(){if(!hs.length&&!$("hn").value.trim())return;S.hum.push({d:today(),t:hs.slice(),n:$("hn").value.trim()});hs=[];$("hn").value="";save();r2()};
+$("radd").onclick=function(){var n=+$("rn").value;if($("rn").value===""||n<0||n>10)return;S.red.push({d:today(),p:$("rp").value,t:$("rh").value||"sem tema",n:n,e:re.slice()});re=[];$("rn").value=$("rh").value="";save();r2()};
+$("rt").oninput=$("rf").oninput=function(){S.rm={t:$("rt").value,m:$("rf").value};save()};
+$("ra").onclick=function(){var x=$("rx").value.trim();if(!x){$("ro").textContent="Cole o texto primeiro.";return}ia("Analise esta discursiva de concurso ("+$("rp").value+"). Liste os principais erros por categoria (gramática, coesão, estrutura, aderência ao tema), cite o trecho e corrija, estime uma nota de 0 a 10 e diga o padrão de erro a treinar.\n\nTexto:\n"+x,$("ro"))};
+$("rtm").onclick=function(){ia("Sugira os 8 temas de redação/discursiva mais prováveis para a prova "+($("rb").value||"de concurso de TI")+", com uma linha de justificativa e o tipo de texto esperado.",$("ro"),function(tx){$("rt").value=tx;S.rm={t:tx,m:$("rf").value};save()})};
+$("cr").onclick=function(){if(!tt){t0=Date.now();tt=setInterval(function(){var s=Math.floor((Date.now()-t0)/1000);$("crt").textContent=pad(Math.floor(s/60))+":"+pad(s%60)},1000);this.textContent="⏹ Parar e registrar"}else{clearInterval(tt);tt=null;$("t").value=Math.max(1,Math.round((Date.now()-t0)/60000));this.textContent="▶ Iniciar cronômetro";$("crt").textContent="00:00";tab(1);$("t").focus()}};
+setInterval(function(){if(!$("p2").hidden)r2()},60000);
+load().then(function(){render();var m=S.rm||{};$("rt").value=m.t||"";$("rf").value=m.m||""});
+</script>
+</body>
+</html>
